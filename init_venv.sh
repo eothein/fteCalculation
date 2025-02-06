@@ -3,6 +3,9 @@
 # Set venv directory name
 VENV_DIR="venv"
 
+# Delete the virtual environment
+rm -rf venv  
+
 # Check if Python is installed
 if ! command -v python3 &> /dev/null; then
     echo "Python3 is not installed. Please install it first."
@@ -21,6 +24,8 @@ fi
 # Activate the virtual environment
 echo "Activating virtual environment..."
 source $VENV_DIR/bin/activate
+
+pip install --upgrade pip setuptools wheel
 
 # Install dependencies if requirements.txt exists
 if [ -f "requirements.txt" ]; then
