@@ -47,9 +47,9 @@ for proj in projects:
 
 # Ensure each person is not overassigned
 for person in people:
-    prob += lpSum(x[proj, person] for proj in projects) <= 1, f"Capacity_per_person_{person}"
+    prob += lpSum(x[proj, person] for proj in projects) <= 1, f"Capacity_per_person_{person}_{hash(person)}"
 
-# ✅ Apply custom constraints from constraint.csv
+#  Apply custom constraints from constraint.csv
 for _, row in df_constraints.iterrows():
     proj = row["ProjectName"]
     person = row["PersonName"]
@@ -83,6 +83,7 @@ if(LpStatus[prob.status] == "Optimal"):
     for proj in projects:
         for person in people:
             fte_matrix.at[proj,person] = x[proj,person].varValue
+    fte_matrix = fte_matrix.loc[:, (fte_matrix > 0).any(axis=0)]
     print("\FTE Allocation matrix")
     print(fte_matrix)
     fte_matrix.to_csv("fte_matrix.csv",index=True)
