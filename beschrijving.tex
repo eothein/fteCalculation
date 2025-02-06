@@ -1,0 +1,59 @@
+\documentclass{article}
+\usepackage{amsmath, amssymb}
+
+\begin{document}
+	
+	\section*{Problem Description}
+	
+	We aim to optimize the allocation of resources across multiple projects. Specifically, we assign individuals to projects while determining their level of involvement, maximizing the total subsidy earnings.
+
+	
+	\subsection*{Decision Variables}
+	Let \( x_i^j \in [0,1] \) be a continuous decision variable, where:
+	\begin{itemize}
+		\item \( i \) represents a project.
+		\item \( j \) represents a person.
+		\item \( x_i^j \) denotes the fraction of time person \( j \) dedicates to project \( i \).
+	\end{itemize}
+	
+	\subsection*{Objective Function}
+	The objective is to maximize the total subsidy earnings, defined as:
+	\[
+	\max \sum_{i} \sum_{j} \alpha_j  \cdot P_j\cdot x_i^j
+	\]
+	where:
+	\begin{itemize}
+		\item \( P_j \) is the cost per person $j$.
+		\item \( \alpha_j \) is a weighting factor accounting for the subsidy percentage.
+	\end{itemize}
+	
+	\subsection*{Constraints}
+	\begin{enumerate}
+		\item \textbf{Project Resource Requirement:  }
+		Each project requires a fixed level of involvement:
+		\[
+		\sum_j x_i^j  = \delta_i, \quad \forall i
+		\]
+		where \( \delta_i \) is the required man months for project \( i \).
+	
+	    \item \textbf{Individual Workload Limit:  }
+		Each person can only work up to a full-time equivalent (FTE) of 1.0:
+		\[
+		\sum_i x_i^j \leq 1, \quad \forall j
+		\]
+		
+		\item \textbf{Project-Specific Constraints:  }
+		Certain projects may have individual-specific constraints restricting some people or forcing people from participating:
+		\[
+		x_i^j = 0, \quad \forall i, j
+		\]
+		\[
+		x_i^j >= \phi_i^j, \quad \forall i, j
+		\]
+\end{enumerate}
+
+\subsection*{Solution Approach}
+This problem is formulated as a linear programming (LP) optimization problem and can be (hopefully) efficiently solved using the Branch and Bound method.
+
+	
+\end{document}
