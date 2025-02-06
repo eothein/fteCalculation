@@ -23,7 +23,11 @@ df_people.columns = df_people.columns.str.strip()  # Remove unwanted spaces
 people = df_people["PersonName"].tolist()
 costs = dict(zip(df_people["PersonName"], df_people["Cost"]))  # Cost per person
 
-# ✅ Define decision variables: Use actual names, not indexes
+# Load additional constraints from constraint.csv
+df_constraints = pd.read_csv("constraints.csv")
+df_constraints.columns = df_constraints.columns.str.strip()  # Clean column names
+
+# Define decision variables: Use actual names, not indexes
 x = {(proj, person): LpVariable(f"x_{proj}_{person}", lowBound=0, upBound=1, cat="Continuous")
      for proj in projects for person in people}
 
@@ -44,6 +48,27 @@ for proj in projects:
 # Ensure each person is not overassigned
 for person in people:
     prob += lpSum(x[proj, person] for proj in projects) <= 1, f"Capacity_per_person_{person}"
+
+# ✅ Apply custom constraints from constraint.csv
+for _, row in df_constraints.iterrows():
+    proj = row["ProjectName"]
+    person = row["PersonName"]
+    constraint_value = row["ConstraintValue"]  # Extract the constraint number
+    print(constraint_value)
+
+    if proj in projects and person in people:
+        try:
+            constraint_value = float(constraint_value)  # Convert to float
+        except ValueError:
+            print(f"Warning: Invalid constraint value '{row['ConstraintValue']}' for {proj}-{person}")
+            continue  # Skip invalid values
+        if constraint_value == 0:
+            # If the value is 0, enforce that x[proj, person] must be 0
+            prob += x[proj, person] == 0, f"Force_Zero_{proj}_{person}"
+        else:
+            # If the value is greater than 0, enforce x[proj, person] >= constraint_value
+            prob += x[proj, person] >= constraint_value, f"Min_Constraint_{proj}_{person}"
+
 
 prob.writeLP("FTEModel.lp")
 
