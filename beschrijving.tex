@@ -53,6 +53,26 @@
 		
 \end{enumerate}
 
+\section*{Additional Constraint: Minimum Hours per Profile/Role}
+
+For each project \( i \) and for every required profile (or role) \( r \), we impose that the total number of allocated hours by all individuals possessing that profile must be at least the specified threshold \( H_{i,r} \) (in hours) as given in the \texttt{project\_roles.csv} file. This constraint ensures that each project receives the necessary expertise and effort from the appropriate profiles.
+
+Mathematically, the constraint is formulated as:
+\[
+\sum_{j \in J_r} x_i^j \ge H_{i,r} \quad \forall i \in I,\; \forall r \in R_i
+\]
+where:
+\begin{itemize}
+	\item \( I \) denotes the set of all projects.
+	\item \( R_i \) denotes the set of required roles for project \( i \).
+	\item \( J_r \) denotes the set of individuals whose profile matches role \( r \).
+	\item \( x_i^j \) is the number of hours that individual \( j \) is allocated to project \( i \).
+	\item \( H_{i,r} \) is the minimum number of hours required for role \( r \) on project \( i \), as specified in the project roles file.
+\end{itemize}
+
+This constraint guarantees that, for every project, the cumulative contribution (in hours) from resources with the necessary profile meets or exceeds the project's minimum requirement.
+
+
 \subsection*{Solution Approach}
 This problem is formulated as a linear programming (LP) optimization problem and can be (hopefully) efficiently solved using the Branch and Bound method.
 
