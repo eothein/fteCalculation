@@ -13,7 +13,7 @@
 	\begin{itemize}
 		\item \( i \) represents a project.
 		\item \( j \) represents a person.
-		\item \( x_i^j \) denotes the fraction of time person \( j \) dedicates to project \( i \).
+		\item \( x_i^j \) denotes the hours person \( j \) dedicates to project \( i \).
 	\end{itemize}
 	
 	\subsection*{Objective Function}
@@ -23,7 +23,7 @@
 	\]
 	where:
 	\begin{itemize}
-		\item \( P_j \) is the cost per person $j$.
+		\item \( P_j \) is the cost per person $j$ expressed as rate per hour.
 		\item \( \alpha_j \) is a weighting factor accounting for the subsidy percentage.
 	\end{itemize}
 	
@@ -37,9 +37,9 @@
 		where \( \delta_i \) is the required man months for project \( i \).
 	
 	    \item \textbf{Individual Workload Limit:  }
-		Each person can only work up to a full-time equivalent (FTE) of 1.0:
+		Each person can only work up to a full-time equivalent (FTE) of 1720 per year:
 		\[
-		\sum_i x_i^j \leq 1, \quad \forall j
+		\sum_i x_i^j \leq 1720, \quad \forall j
 		\]
 		
 		\item \textbf{Project-Specific Constraints:  }
@@ -50,6 +50,7 @@
 		\[
 		x_i^j >= \phi_i^j, \quad \forall i, j
 		\]
+		
 \end{enumerate}
 
 \subsection*{Solution Approach}
