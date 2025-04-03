@@ -1,8 +1,78 @@
-﻿PersonID,PersonName,Cost,profile
-1,Max,7.751937984,R&D
-3,Nico,3.813129845,R&D
-4,Noa,3.172238372,R&D
-5,Joao,4.470106589,R&D
-6,Jens,10,ProjectManager
-7,Stef,4,Networkexpert
-8,Stunpiloot,5,RANEngineer
+﻿PersonID,PersonName,Cost,Profile
+1,Bert Dufraimont,85,Project Manager
+2,Kelly Demuynck,85,Project Manager
+3,Peter Bergen,85,Project Manager
+4,Thomas Rau,85,Project Manager
+5,Jelle Deceuninck,85,Project Manager
+7,Kevin Schuermans,85,Project Manager
+8,Peter Borgoo,85,Project Manager
+9,Niels Van Kets,100,RAN Engineer
+10,Stijn Van Paesschen,70,RAN Engineer
+11,Yamin Ofkir,70,RAN Engineer
+12,Jens Buysse,88,Research Expert
+13,Max Dekoninck,60,Research Expert
+14,Nico Van Hevel,60,Research Expert
+15,Noa Lambert,60,Research Expert
+17,Robin Boucquet,52,Network expert
+18,Tom Pirlet,52,Network expert
+19,Hossein Azar,52,Network expert
+20,Jonathan Doutrepont,52,Network expert
+21,Malek Titi,52,Network expert
+22,Sinan Yücel,52,Network expert
+23,Thomas Roose,52,Network expert
+24,Tom Maenhoudt,52,Network expert
+25,Filip Vandewalle,63,Solution expert
+26,Aster Van Petegem,63,Solution expert
+27,Björn De Gloire,63,Solution expert
+28,Jibe Defoor,63,Solution expert
+29,Geert Weterings,63,Solution expert
+30,Joachim Slabbaert,63,Solution expert
+31,Natacha Puttemans,63,Solution expert
+32,Stefan Vercouteren,63,Solution expert
+33,Tomas Cautereels,63,Solution expert
+34,Robbe Desmet,63,Solution expert
+35,Lieven De Bontridder,63,Solution expert
+36,Koen Vandeputte,55,Hardware developer
+37,Bart Storme,43,Technical Expert
+38,Jolan Verbeke,43,Technical Expert
+39,Korneel Van Den Berghe,43,Technical Expert
+40,Steven Jacobus,43,Technical Expert
+41,Tim Monballiu,43,Technical Expert
+42,Wouter De Bleeker,43,Technical Expert
+43,Xavier Debaere,43,Technical Expert
+44,Tom Vandegehuchte,46,SupportExpert
+45,Stijn Mandonx,46,SupportExpert
+46,Noom Baelde,46,SupportExpert
+47,Wout Derudder,46,SupportExpert
+48,TweedeWouter,46,SupportExpert
+49,TweedeXavier,46,SupportExpert
+50,Aron Sirjacobs,52,Marketingexpert
+51,Hilbren Van Nieuwenborgh,80,Marketingexpert
+52,Ibe Smessaert,52,Marketingexpert
+53,Yannick Blanckaert,52,Marketingexpert
+54,Julie Declerck,52,Marketingexpert
+55,Alexander Borry,100,Enterprise architect
+56,Eric Smeekens,100,Enterprise architect
+57,ConnectEngineer1,95,Connect engineer
+58,ConnectEngineer2,95,Connect engineer
+59,BssBackeddeveloper1,61,BSS Backend Developer
+60,Frédéric Saelens,80,Security Expert
+61,Iven Germonpré,50,Security Expert
+62,Laurens Puystjens,50,Security Expert
+63,Sam Desmet,50,Security Expert
+64,Sarah Van Esch,90,DPO
+65,DronePiloot1,50,Drone piloot
+66,DronePiloot2,50,Drone piloot
+67,DronePiloot3,50,Drone piloot
+68,Eline Baes,54,Finance Expert
+69,Eva Tack,54,Finance Expert
+70,Mathieu Verhaeghe,88,Finance Expert
+71,Shauny Meuleman,54,Finance Expert
+72,Sam Naessens,54,Finance Expert
+73,Badouin,100,Project Manager
+74,Sofie Bultheel,85,Project Manager
+75,Program Manager 3,85,Project Manager
+80,Hugo Santo,100,Enterprise architect
+81,Dean Morgan,100,Enterprise architect
+82,Senne Van Loon,100,RAN Engineer
+83,Sam Blancquaert,100,Project Manager

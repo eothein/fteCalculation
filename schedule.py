@@ -4,10 +4,13 @@ for Research
 """
 
 import pandas as pd
-from pulp import LpMaximize, LpProblem, LpVariable, LpStatus, lpSum, PULP_CBC_CMD
+from pulp import LpMaximize, LpProblem, LpVariable, LpStatus, lpSum,value, PULP_CBC_CMD
 from typing import Final
 
+
 EUROPEAN_HOURS: Final = 1720  # European working hours per year
+
+import pandas as pd
 
 # Load project data
 df_projects = pd.read_csv("projects.csv")
@@ -16,7 +19,8 @@ df_projects.columns = df_projects.columns.str.strip()  # Remove unwanted spaces
 # Extract **project names as strings**
 projects = df_projects["ProjectName"].tolist()
 funding = dict(zip(df_projects["ProjectName"], df_projects["Funding"]))  # Required FTEs per project
-total_resources = dict(zip(df_projects["ProjectName"], df_projects["TotalResources"]))  
+#total_resources = dict(zip(df_projects["ProjectName"], df_projects["TotalResources"]))  
+
 
 # Load people data
 df_people = pd.read_csv("people.csv")
@@ -27,16 +31,14 @@ people = df_people["PersonName"].tolist()
 costs = dict(zip(df_people["PersonName"], df_people["Cost"])) 
 
 # Extract **profile type  as strings**
-profiles = dict(zip(df_people["PersonName"], df_people["profile"]))  
+profiles = dict(zip(df_people["PersonName"], df_people["Profile"]))  
 #print(profiles)
 
 # Load additional constraints from constraint.csv
 df_constraints = pd.read_csv("constraints.csv")
 df_constraints.columns = df_constraints.columns.str.strip()  # Clean column names
 
-# Define decision variables: Use actual names, not indexes
-x = {(proj, person): LpVariable(f"x_{proj}_{person}", lowBound=0, upBound=EUROPEAN_HOURS, cat="Continuous")
-     for proj in projects for person in people}
+
 
 # Read the Project Roles CSV
 # ================================
@@ -45,6 +47,19 @@ df_project_roles = pd.read_csv("project_roles.csv")
 
 # Rename the first column to 'Project' if not already named so
 df_project_roles.rename(columns={df_project_roles.columns[0]: 'Project'}, inplace=True)
+
+# Calculate total requested resources from project_roles.csv
+total_requested_resources = {}
+for project in df_project_roles['Project']:
+    # Sum the role requirements for each project
+    total_requested = df_project_roles.loc[df_project_roles['Project'] == project].iloc[:, 1:].sum(axis=1).values[0]
+    total_requested_resources[project] = total_requested
+
+print("Total requested resources per project:")
+for project, total in total_requested_resources.items():
+    print(f"Project '{project}': {total} hours")
+
+
 
 # Build a dictionary: project name -> { role: required_hours }
 project_requirements = {}
@@ -66,10 +81,71 @@ for _, row in df_project_roles.iterrows():
             role_hours[role_clean] = hours
     project_requirements[project_name] = role_hours
 
-#print(project_requirements)
+
+def checkUnmatchedRoles():
+    # Load data
+    people_df = pd.read_csv("people.csv")
+    roles_df = pd.read_csv("project_roles.csv", index_col=0)
+
+    # Extract available profiles from people
+    available_profiles = set(people_df["Profile"].unique())
+
+    print("=== Role (Profile) Availability Check Per Project ===")
+    for project, row in roles_df.iterrows():
+        required_profiles = set(row[row > 0].index)  # Columns with effort > 0
+        missing = required_profiles - available_profiles
+        if missing:
+            print(f"❌ Project '{project}' is missing profiles: {', '.join(missing)}")
+        else:
+            print(f"✅ Project '{project}' has all required profiles available.")
+
+def checkEnoughResourcesForProfile():
+    print("Checking whether enough resources are available for each profile")
+    # Load data
+    people = pd.read_csv("people.csv")
+    project_roles = pd.read_csv("project_roles.csv")
 
 
-#print(x)
+    # Step 1: Calculate available hours per profile
+    profile_counts = people['Profile'].value_counts()
+    profile_hours_available = profile_counts * EUROPEAN_HOURS
+
+    # Step 2: Calculate required hours per profile across all projects
+    # Reshape project roles table
+    project_role_needs = project_roles.melt(id_vars=['Project'], var_name='Role', value_name='HoursNeeded')
+    project_role_needs = project_role_needs.dropna()
+
+    # Group by Role to sum up required hours
+    total_hours_required_per_role = project_role_needs.groupby('Role')['HoursNeeded'].sum()
+
+    # Step 3: Combine into a single DataFrame
+    resource_balance_df = pd.DataFrame({
+        "Available Hours": profile_hours_available,
+        "Required Hours": total_hours_required_per_role
+    }).fillna(0)
+
+    # Step 4: Compute surplus or shortage
+    resource_balance_df["Surplus (Available - Required)"] = (
+        resource_balance_df["Available Hours"] - resource_balance_df["Required Hours"]
+    )
+
+    # Show the result
+    print(resource_balance_df)
+    shortages = resource_balance_df[resource_balance_df["Surplus (Available - Required)"] < 0]
+    if not shortages.empty:
+        print("Insufficient availability for the following profiles:\n")
+        print(shortages)
+
+import pandas as pd
+
+
+checkUnmatchedRoles()
+checkEnoughResourcesForProfile()
+
+
+# Define decision variables: Use actual names, not indexes
+x = {(proj, person): LpVariable(f"x_{proj}_{person}", lowBound=0, upBound=EUROPEAN_HOURS, cat="Continuous")
+     for proj in projects for person in people}
 
 # Define the optimization problem
 prob = LpProblem("Project_Allocation", LpMaximize)
@@ -79,20 +155,19 @@ prob += lpSum(x[proj, person] * costs[person] * funding[proj] for proj in projec
 
 # Constraints
 
-# Ensure each project gets the required FTEs (funding requirement)
+# Ensure each project gets the required hours (funding requirement)
 for proj in projects:
-    prob += lpSum(x[proj, person]  for person in people) == total_resources[proj], f"Capacity_per_project_{proj}"
+    prob += lpSum(x[proj, person]  for person in people) <= total_requested_resources[proj], f"Capacity_per_project_{proj}"
 
 # Ensure each person is not overassigned
 for person in people:
-    prob += lpSum(x[proj, person] for proj in projects) <= EUROPEAN_HOURS, f"Capacity_per_person_{person}_{hash(person)}"
+    prob += lpSum(x[proj, person] for proj in projects) <= 1.5 * EUROPEAN_HOURS, f"Capacity_per_person_{person}_{hash(person)}"
 
 #  Apply custom constraints from constraint.csv
 for _, row in df_constraints.iterrows():
     proj = row["ProjectName"]
     person = row["PersonName"]
     constraint_value = row["ConstraintValue"]  # Extract the constraint number
-    print(constraint_value)
 
     if proj in projects and person in people:
         try:
@@ -102,13 +177,14 @@ for _, row in df_constraints.iterrows():
             continue  # Skip invalid values
         if constraint_value == 0:
             # If the value is 0, enforce that x[proj, person] must be 0, i.e. not working on the project
-            prob += x[proj, person] == 0, f"Force_Zero_{proj}_{person}"
+            #prob += x[proj, person] == 0, f"Force_Zero_{proj}_{person}"
+            continue
         else:
             # If the value is greater than 0, enforce x[proj, person] >= constraint_value
             prob += x[proj, person] >= constraint_value, f"Min_Constraint_{proj}_{person}"
 
-print(project_requirements)
-print(profiles)
+#print(project_requirements)
+#print(profiles)
 
 
 # ----------------------------
@@ -132,14 +208,6 @@ for proj in projects:
 
 prob.writeLP("FTEModel.lp")
 
-total_resources = sum(total_resources.values())
-print(f"Total Resources to allocate: {total_resources}")
-total_resources_to_spend = len(set(people)) * EUROPEAN_HOURS
-print(f"Max Resources to spend: {total_resources_to_spend}")
-
-if(total_resources_to_spend < total_resources):
-    print(f"Warning: total resources to spend is less than total resources required")
-
 
 # Solve the problem
 prob.solve(PULP_CBC_CMD(msg=False))
@@ -153,17 +221,26 @@ if(LpStatus[prob.status] == "Optimal"):
         for person in people:
             fte_matrix.at[proj,person] = x[proj,person].varValue
     fte_matrix = fte_matrix.loc[:, (fte_matrix > 0).any(axis=0)]
-    print("\FTE Allocation matrix")
+    print("FTE Allocation matrix")
     print(fte_matrix)
     fte_matrix.to_csv("fte_matrix.csv",index=True)
-    print("\FTE allocation saved to 'fte_matrix.csv'")
+    print("FTE allocation saved to 'fte_matrix.csv'")
 
-            
-''''
-# Print results
-print("\nProject Assignments (Fractional FTEs):")
-for proj in projects:
-    assigned_people = [(person, round(x[proj, person].varValue, 2)) for person in people if x[proj, person].varValue > 0]
-    if assigned_people:
-        print(f"{proj}: " + ", ".join(f"{person} ({fte})" for person, fte in assigned_people))
-'''
+    allocation_records = []
+
+    for proj in projects:
+        for person in people:
+            hours = x[proj, person].varValue
+            if hours and hours > 0:
+                allocation_records.append({
+                    "Project": proj,
+                    "Person": person,
+                    "HoursAllocated": round(hours, 2)
+                })
+
+    allocation_df = pd.DataFrame(allocation_records)
+    print("Detailed allocation list:")
+    print(allocation_df)
+
+    allocation_df.to_csv("fte_allocation_detailed.csv", index=False)
+    print("Three-column format saved to 'fte_allocation_detailed.csv'")     
